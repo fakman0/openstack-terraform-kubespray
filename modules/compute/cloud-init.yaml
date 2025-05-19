@@ -6,7 +6,7 @@ packages:
   - apt-transport-https
   - ca-certificates
   - curl
-  - gnupg
+  - gnupg2
   - lsb-release
   - software-properties-common
   - python3
@@ -20,6 +20,12 @@ write_files:
       net.bridge.bridge-nf-call-iptables = 1
       net.ipv4.ip_forward = 1
     permissions: '0644'
+    
+  - path: /etc/modules-load.d/containerd.conf
+    content: |
+      overlay
+      br_netfilter
+    permissions: '0644'
 
 runcmd:
   # Load required kernel modules
@@ -28,7 +34,7 @@ runcmd:
   
   # Apply sysctl settings
   - sysctl --system  
-  
+
   # Disable swap
   - swapoff -a
   - sed -i '/swap/d' /etc/fstab
