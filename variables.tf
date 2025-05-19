@@ -102,3 +102,9 @@ variable "worker_volume_size" {
   type        = number
   default     = 150
 }
+
+variable "metallb_floating_ip_count" {
+  description = "Number of floating IPs to reserve for MetalLB"
+  type        = number
+  default     = 1
+}

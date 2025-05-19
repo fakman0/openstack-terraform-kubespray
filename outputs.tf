@@ -23,12 +23,17 @@ output "router_id" {
   value       = module.network.router_id
 }
 
-output "security_group_id" {
+output "secgroup_id" {
   description = "ID of the created security group"
-  value       = module.network.security_group_id
+  value       = module.network.secgroup_id
 }
 
 output "control_plane_floating_ip" {
   description = "Floating IP assigned to the Kubernetes control plane"
   value       = module.network.control_plane_floating_ip
+}
+
+output "metallb_floating_ips" {
+  description = "Floating IPs reserved for MetalLB"
+  value       = module.network.metallb_floating_ips
 }

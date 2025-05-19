@@ -12,6 +12,13 @@ module "network" {
   subnet_cidr      = var.subnet_cidr
   dns_nameservers  = var.dns_nameservers
   router_name      = var.router_name
+  
+  # Pass node counts to network module for port creation
+  master_count     = var.master_count
+  worker_count     = var.worker_count
+  
+  # Pass the number of floating IPs to reserve for MetalLB
+  metallb_floating_ip_count = var.metallb_floating_ip_count
 }
 
 # Volumes module
@@ -30,7 +37,7 @@ module "compute" {
 
   network_id       = module.network.network_id
   subnet_id        = module.network.subnet_id
-  security_group_id = module.network.security_group_id
+  security_group_id = module.network.secgroup_id
   image_id         = var.image_id
   master_count     = var.master_count
   worker_count     = var.worker_count
@@ -40,4 +47,8 @@ module "compute" {
   master_volume_ids = module.volumes.master_volume_ids
   worker_volume_ids = module.volumes.worker_volume_ids
   control_plane_floating_ip = module.network.control_plane_floating_ip
+  
+  # Pass the pre-created ports with allowed address pairs
+  master_port_ids  = module.network.master_port_ids
+  worker_port_ids  = module.network.worker_port_ids
 }

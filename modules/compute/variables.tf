@@ -57,3 +57,13 @@ variable "control_plane_floating_ip" {
   description = "Floating IP to associate with the first master node"
   type        = string
 }
+
+variable "master_port_ids" {
+  description = "IDs of pre-created ports for master nodes with allowed address pairs"
+  type        = list(string)
+}
+
+variable "worker_port_ids" {
+  description = "IDs of pre-created ports for worker nodes with allowed address pairs"
+  type        = list(string)
+}
