@@ -127,6 +127,38 @@ chmod +x tf8  # Make the script executable first
 ./tf8 deploy  # Deploy the complete infrastructure
 ```
 
+## Terraform Outputs for Ansible
+
+This project automatically exports Terraform outputs to a JSON file for use with Ansible. After running `terraform apply`, a file named `ansible/inventory/terraform_outputs.json` will be created containing all the infrastructure details.
+
+### Dynamic Ansible Inventory
+
+A dynamic inventory script is provided in `ansible/inventory/terraform_inventory.py` that reads the Terraform outputs and generates an Ansible inventory. To use it:
+
+1. Make sure the script is executable:
+   ```
+   chmod +x ansible/inventory/terraform_inventory.py
+   ```
+
+2. Test the inventory:
+   ```
+   ansible/inventory/terraform_inventory.py --list
+   ```
+
+3. Run Ansible playbooks using this inventory:
+   ```
+   cd ansible
+   ansible-playbook -i inventory/terraform_inventory.py playbooks/your-playbook.yml
+   ```
+
+The inventory automatically sets up the following groups:
+- `kube_control_plane`: All master nodes
+- `kube_node`: All worker nodes
+- `etcd`: All master nodes (for etcd)
+- `k8s_cluster`: All Kubernetes nodes
+
+Additional variables are also available, including `control_plane_floating_ip` and `metallb_floating_ips`.
+
 ## Cleaning Up
 
 To destroy all resources:

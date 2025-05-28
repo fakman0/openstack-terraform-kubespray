@@ -52,3 +52,18 @@ module "compute" {
   master_port_ids  = module.network.master_port_ids
   worker_port_ids  = module.network.worker_port_ids
 }
+
+# Output to JSON file for Ansible inventory
+resource "local_file" "terraform_outputs" {
+  content = jsonencode({
+    master_ips               = module.compute.master_ips
+    worker_ips               = module.compute.worker_ips
+    control_plane_floating_ip = module.network.control_plane_floating_ip
+    metallb_floating_ips     = module.network.metallb_floating_ips
+    network_id               = module.network.network_id
+    subnet_id                = module.network.subnet_id
+    router_id                = module.network.router_id
+    secgroup_id              = module.network.secgroup_id
+  })
+  filename = "${path.module}/../terraform_outputs.json"
+}
