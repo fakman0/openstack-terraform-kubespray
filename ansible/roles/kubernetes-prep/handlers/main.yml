@@ -1,0 +1,24 @@
+---
+- name: Reload sysctl
+  ansible.builtin.command: sysctl -p /etc/sysctl.d/99-kubernetes.conf
+  become: true
+
+- name: Reload daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+  become: true
+
+- name: Restart systemd-timesyncd
+  ansible.builtin.systemd:
+    name: systemd-timesyncd
+    state: restarted
+    enabled: true
+  become: true
+
+- name: Update hostname in /etc/hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: "^127.0.1.1"
+    line: "127.0.1.1 {{ inventory_hostname }}"
+    state: present
+  become: true 

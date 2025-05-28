@@ -1,0 +1,77 @@
+---
+- name: Install required packages
+  ansible.builtin.apt:
+    name: "{{ common_packages }}"
+    state: present
+    update_cache: true
+  become: true
+  register: package_install
+  retries: 5
+  delay: 5
+  until: package_install is success
+
+- name: Check if containerd is installed
+  ansible.builtin.command: dpkg -l | grep -q containerd
+  register: containerd_check
+  failed_when: false
+  changed_when: false
+  check_mode: false
+
+- name: Add Docker GPG apt key
+  ansible.builtin.apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+  become: true
+  when: containerd_check.rc != 0
+  retries: 5
+  delay: 5
+
+- name: Add Docker repository
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    state: present
+    update_cache: true
+  become: true
+  when: containerd_check.rc != 0
+  retries: 5
+  delay: 5
+
+- name: Install containerd
+  ansible.builtin.apt:
+    name: containerd.io
+    state: present
+  become: true
+  when: containerd_check.rc != 0
+  register: containerd_install
+  retries: 5
+  delay: 5
+  until: containerd_install is success
+
+- name: Create containerd config directory
+  ansible.builtin.file:
+    path: /etc/containerd
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Generate default containerd configuration
+  ansible.builtin.shell: containerd config default > /etc/containerd/config.toml
+  become: true
+  args:
+    creates: /etc/containerd/config.toml
+
+- name: Configure containerd to use systemd cgroup driver
+  ansible.builtin.lineinfile:
+    path: /etc/containerd/config.toml
+    regexp: '^\s*SystemdCgroup\s*=.*'
+    line: '            SystemdCgroup = true'
+    state: present
+  become: true
+  notify: Reload daemon
+
+- name: Restart and enable containerd
+  ansible.builtin.systemd:
+    name: containerd
+    state: restarted
+    enabled: true
+  become: true 

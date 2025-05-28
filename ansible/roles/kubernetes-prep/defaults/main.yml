@@ -1,0 +1,45 @@
+---
+# Timezone setting
+timezone: "UTC"
+
+# Packages to install
+common_packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg-agent
+  - software-properties-common
+  - python3-pip
+  - python3-setuptools
+  - systemd-timesyncd
+  - jq
+  - net-tools
+
+# Kernel modules required for Kubernetes
+k8s_required_modules:
+  - overlay
+  - br_netfilter
+
+# Kernel parameters for Kubernetes
+k8s_kernel_params:
+  - name: net.bridge.bridge-nf-call-iptables
+    value: 1
+  - name: net.bridge.bridge-nf-call-ip6tables
+    value: 1
+  - name: net.ipv4.ip_forward
+    value: 1
+  - name: net.ipv6.conf.all.forwarding
+    value: 1
+  - name: net.ipv4.conf.all.rp_filter
+    value: 0
+  - name: fs.inotify.max_user_instances
+    value: 8192
+  - name: fs.inotify.max_user_watches
+    value: 524288
+  - name: vm.swappiness
+    value: 0
+  - name: vm.overcommit_memory
+    value: 1
+
+# Swap configuration
+disable_swap: true 

@@ -1,0 +1,21 @@
+---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  become: true
+  register: apt_update
+  retries: 5
+  delay: 5
+  until: apt_update is success
+
+- name: Upgrade all packages
+  ansible.builtin.apt:
+    upgrade: dist
+    autoremove: true
+    autoclean: true
+  become: true
+  register: apt_upgrade
+  retries: 5
+  delay: 5
+  until: apt_upgrade is success 

@@ -1,0 +1,38 @@
+---
+- name: Prepare nodes for Kubernetes installation
+  hosts: all
+  gather_facts: true
+  become: true
+
+  pre_tasks:
+    - name: Check connectivity
+      ansible.builtin.ping:
+
+    - name: Display information about target hosts
+      ansible.builtin.debug:
+        msg: "Preparing host: {{ inventory_hostname }} ({{ ansible_host }})"
+
+  roles:
+    - role: kubernetes-prep
+
+  post_tasks:
+    - name: Verify system is prepared for Kubernetes
+      ansible.builtin.debug:
+        msg: "Host {{ inventory_hostname }} is successfully prepared for Kubernetes installation"
+
+    - name: Check if reboot is required
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: reboot_required
+
+    - name: Notify if reboot is required
+      ansible.builtin.debug:
+        msg: "Reboot is required for host {{ inventory_hostname }} to apply all changes"
+      when: reboot_required.stat.exists
+
+    # Optional task to automatically reboot if required - uncomment if needed
+    # - name: Reboot if required
+    #   ansible.builtin.reboot:
+    #     reboot_timeout: 300
+    #     post_reboot_delay: 30
+    #   when: reboot_required.stat.exists 

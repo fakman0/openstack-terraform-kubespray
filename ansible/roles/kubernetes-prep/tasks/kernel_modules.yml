@@ -1,0 +1,32 @@
+---
+- name: Load required kernel modules
+  community.general.modprobe:
+    name: "{{ item }}"
+    state: present
+  become: true
+  loop: "{{ k8s_required_modules }}"
+
+- name: Add kernel modules to /etc/modules-load.d
+  ansible.builtin.copy:
+    dest: /etc/modules-load.d/k8s.conf
+    content: |
+      # Kernel modules for Kubernetes
+      {% for module in k8s_required_modules %}
+      {{ module }}
+      {% endfor %}
+    mode: '0644'
+  become: true
+
+- name: Verify kernel modules are loaded
+  ansible.builtin.shell: lsmod | grep -E "{{ item }}"
+  become: true
+  loop: "{{ k8s_required_modules }}"
+  register: module_check
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Display loaded kernel modules
+  ansible.builtin.debug:
+    msg: "Module {{ item.item }} status: {{ 'loaded' if item.rc == 0 else 'not loaded' }}"
+  loop: "{{ module_check.results }}" 

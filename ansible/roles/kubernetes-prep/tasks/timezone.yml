@@ -1,0 +1,23 @@
+---
+- name: Set timezone
+  community.general.timezone:
+    name: "{{ timezone }}"
+  become: true
+  notify: Restart systemd-timesyncd
+
+- name: Ensure timesyncd is installed and running
+  ansible.builtin.systemd:
+    name: systemd-timesyncd
+    state: started
+    enabled: true
+  become: true
+
+- name: Check current time
+  ansible.builtin.command: date
+  register: current_time
+  changed_when: false
+  check_mode: false
+
+- name: Display current time
+  ansible.builtin.debug:
+    msg: "Current time is {{ current_time.stdout }}" 

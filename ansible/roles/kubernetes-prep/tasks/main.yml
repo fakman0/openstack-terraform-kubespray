@@ -1,0 +1,29 @@
+---
+# Include sub-tasks
+- name: Include OS update tasks
+  ansible.builtin.import_tasks: update_os.yml
+  tags: update
+
+- name: Include hostname setup tasks
+  ansible.builtin.import_tasks: hostname.yml
+  tags: hostname
+
+- name: Include timezone tasks
+  ansible.builtin.import_tasks: timezone.yml
+  tags: timezone
+
+- name: Include packages installation tasks
+  ansible.builtin.import_tasks: packages.yml
+  tags: packages
+
+- name: Include swap disable tasks
+  ansible.builtin.import_tasks: swap.yml
+  tags: swap
+
+- name: Include kernel module tasks
+  ansible.builtin.import_tasks: kernel_modules.yml
+  tags: kernel
+
+- name: Include kernel parameters tasks
+  ansible.builtin.import_tasks: kernel_params.yml
+  tags: kernel 

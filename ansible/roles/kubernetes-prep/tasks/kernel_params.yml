@@ -1,0 +1,35 @@
+---
+- name: Set kernel parameters for Kubernetes
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: false
+  become: true
+  loop: "{{ k8s_kernel_params }}"
+  register: sysctl_set
+
+- name: Create sysctl config file for Kubernetes
+  ansible.builtin.copy:
+    dest: /etc/sysctl.d/99-kubernetes.conf
+    content: |
+      # Kernel parameters for Kubernetes
+      {% for param in k8s_kernel_params %}
+      {{ param.name }} = {{ param.value }}
+      {% endfor %}
+    mode: '0644'
+  become: true
+  notify: Reload sysctl
+
+- name: Verify kernel parameters
+  ansible.builtin.command: sysctl {{ item.name }}
+  become: true
+  loop: "{{ k8s_kernel_params }}"
+  register: param_check
+  changed_when: false
+  check_mode: false
+
+- name: Display kernel parameters
+  ansible.builtin.debug:
+    msg: "Parameter {{ item.stdout }}"
+  loop: "{{ param_check.results }}" 

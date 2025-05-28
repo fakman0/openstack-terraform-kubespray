@@ -1,0 +1,30 @@
+---
+- name: Ensure hostname is set correctly
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"
+  become: true
+  register: hostname_changed
+
+- name: Notify to update /etc/hosts
+  ansible.builtin.debug:
+    msg: "Hostname changed to {{ inventory_hostname }}, updating /etc/hosts"
+  when: hostname_changed.changed
+  notify: Update hostname in /etc/hosts
+
+- name: Check current hostname
+  ansible.builtin.command: hostname
+  register: current_hostname
+  changed_when: false
+  check_mode: false
+
+- name: Display current hostname
+  ansible.builtin.debug:
+    msg: "Current hostname is {{ current_hostname.stdout }}"
+
+- name: Ensure hostname persists across reboots
+  ansible.builtin.lineinfile:
+    path: /etc/hostname
+    regexp: ".*"
+    line: "{{ inventory_hostname }}"
+    state: present
+  become: true 

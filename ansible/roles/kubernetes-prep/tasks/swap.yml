@@ -1,0 +1,36 @@
+---
+- name: Check if swap is enabled
+  ansible.builtin.command: swapon --show
+  register: swap_status
+  changed_when: false
+  check_mode: false
+
+- name: Display swap status
+  ansible.builtin.debug:
+    msg: "Current swap status: {{ swap_status.stdout_lines | default(['No swap']) }}"
+
+- name: Disable swap
+  ansible.builtin.command: swapoff -a
+  become: true
+  when: 
+    - disable_swap | bool
+    - swap_status.stdout != ""
+  register: swap_disabled
+  changed_when: swap_disabled.rc == 0
+
+- name: Remove swap entries from /etc/fstab
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    regexp: '^\s*[^#]\s*.*\s+swap\s+.*$'
+    state: absent
+  become: true
+  when: disable_swap | bool
+
+- name: Set vm.swappiness to 0
+  ansible.posix.sysctl:
+    name: vm.swappiness
+    value: '0'
+    state: present
+    reload: true
+  become: true
+  when: disable_swap | bool 
